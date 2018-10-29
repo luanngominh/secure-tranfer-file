@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"net"
 	"os"
@@ -17,9 +18,18 @@ var (
 func init() {
 	config.Cfg.Port = os.Getenv("PORT")
 	config.Cfg.Address = os.Getenv("ADDR")
-	config.Cfg.PrivateKey = os.Getenv("PRIVATE")
-	config.Cfg.PublicKey = os.Getenv("PUBLIC")
 
+	data, err := base64.StdEncoding.DecodeString(os.Getenv("PRIVATE"))
+	if err != nil {
+		panic(err)
+	}
+	config.Cfg.PrivateKey = string(data)
+
+	data, err = base64.StdEncoding.DecodeString(os.Getenv("PUBLIC"))
+	if err != nil {
+		panic(err)
+	}
+	config.Cfg.PublicKey = string(data)
 }
 
 func main() {
@@ -40,6 +50,7 @@ func main() {
 			continue
 		}
 		logger.Log("Log", fmt.Sprintf("%s connected", conn.RemoteAddr().String()))
+
 		// transfer file in secure channel
 		go service.ConnectionHandle(conn, logger)
 	}
