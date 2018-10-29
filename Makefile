@@ -1,11 +1,9 @@
 include server/.env
-include client/.env
 
 .PHONY: all build-server build-client up-server up-client clean
 
 all: build-server build-client
-	@echo ${CLIENT_PORT}
-	@echo ${SERVER_PORT}
+	@echo ${FILE_STORAGE}
 
 build-server:
 	go build -o bin/server server/cmd/main.go
@@ -14,14 +12,14 @@ build-client:
 	go build -o bin/client client/cmd/main.go
 
 up-client: build-client
-	./bin/client
+	PORT=${CLIENT_PORT} ./bin/client
 
 up-server: build-server
-	./bin/server
+	PORT=${SERVER_PORT} ADDR=${ADDR} PRIVATE=${PRIVATE} PUBLIC=${PUBLIC} ./bin/server
 
 clean:
 	rm -f bin/*
 
 deps:
 	@echo "Install dependenciy packages ..."
-	@go get github.com/crsmithdev/goenv
+	go get go get github.com/go-kit/kit/log
