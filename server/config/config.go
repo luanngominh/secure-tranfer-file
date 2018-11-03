@@ -1,16 +1,5 @@
 package config
 
-type Config struct {
-	Port       string
-	Address    string
-	PrivateKey string
-	PublicKey  string
-}
-
-var (
-	Cfg = &Config{}
-)
-
 import (
 	"crypto/aes"
 	"crypto/cipher"
@@ -21,6 +10,17 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+)
+
+type Config struct {
+	Port       string
+	Address    string
+	PrivateKey string
+	PublicKey  string
+}
+
+var (
+	Cfg = &Config{}
 )
 
 func createHash(key string) string {
