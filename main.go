@@ -2,11 +2,11 @@
 package main
 
 import (
+	"crypto/x509"
 	"encoding/base64"
+	"encoding/pem"
 	"fmt"
 	"os"
-
-	"github.com/luanngominh/secure-tranfer-file/util"
 )
 
 var (
@@ -29,10 +29,14 @@ func init() {
 }
 
 func main() {
-	mess := []byte("meo con xinh xan, say meo meo")
-	key := []byte("meoconxinhxinh")
+	// fmt.Println(pub)
+	// fmt.Println(priv)
 
-	encryptMsg, _ := util.EncryptWithKey(mess, key)
-	msg, _ := util.DecryptWithKey(encryptMsg, key)
-	fmt.Println(string(msg))
+	privPem, _ := pem.Decode([]byte(priv))
+	if privPem.Type != "RSA PRIVATE KEY" {
+		fmt.Println("RSA private key error")
+		return
+	}
+	key, _ := x509.ParsePKCS1PrivateKey(privPem.Bytes)
+
 }

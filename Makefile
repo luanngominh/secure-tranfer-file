@@ -25,4 +25,4 @@ deps:
 
 test:
 	go build -o bin/test main.go
-	PRIVATE=${PRIVATE} PUBLIC=${PUBLIC} ./bin/test
+	@PRIVATE=${PRIVATE} PUBLIC=${PUBLIC} ./bin/test

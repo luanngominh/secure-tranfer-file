@@ -21,9 +21,9 @@ func Decrypt(dst interface{}) (interface{}, error) {
 }
 
 //Encrypt encrypt dst with public key
-func Encrypt(dst interface{}) (interface{}, error) {
-	return nil, nil
-}
+// func EncryptWithPublicKey(plainText []byte, publicKey string) ([]byte, error) {
+
+// }
 
 //EncryptWithKey encrypt dst with key
 //Use AES algo or something like that

@@ -91,7 +91,6 @@ func ConnectionHandle(c net.Conn, logger log.Logger) {
 	// Send session key
 	sessionMessage := fmt.Sprintf("Session: %s\n", sessInfo.SessionKey)
 	sessionMessageCipher, _ := util.EncryptWithKey([]byte(sessionMessage), []byte(sessInfo.ClientKey))
-	fmt.Println(sessionMessageCipher)
 	_, err = writer.Write(sessionMessageCipher)
 	writer.Flush()
 	if err != nil {
@@ -107,23 +106,24 @@ func ConnectionHandle(c net.Conn, logger log.Logger) {
 	fileRequest := make([]byte, 1000)
 	n, err = c.Read(fileRequest)
 	if err != nil {
-		logger.Log("Key", "Receive file request error")
+		logger.Log("Error", "Receive file request error")
 		return
 	}
 	// TODO: decrypt filerequest with clientkey
+	// TODO: compare session key
 
 	//n - 1 because remove \n character
 	fileRequestString := string(fileRequest[:n-1])
 
 	//case filename is spam message
 	if len(fileRequestString) < 7 {
-		logger.Log("Log", fmt.Sprintf("%s File request %s error", c.RemoteAddr().String(), fileRequestString))
+		logger.Log("Error", fmt.Sprintf("%s File request %s error", c.RemoteAddr().String(), fileRequestString))
 		return
 	}
 
 	// check file request is true
 	if fileRequestString[:6] != "File: " {
-		logger.Log("Log", fmt.Sprintf("%s File request %s error", c.RemoteAddr().String(), fileRequestString))
+		logger.Log("Error", fmt.Sprintf("%s File request %s error", c.RemoteAddr().String(), fileRequestString))
 		return
 	}
 	logger.Log("Log", fmt.Sprintf("%s request %s file", c.RemoteAddr().String(), fileRequestString))
@@ -131,16 +131,27 @@ func ConnectionHandle(c net.Conn, logger log.Logger) {
 	// check file has existed yet
 	fileRequestParses := strings.Split(fileRequestString, " ")
 	if len(fileRequestParses) != 2 {
-		logger.Log("Log", fmt.Sprintf("%s File request %s error due to parse error", c.RemoteAddr().String(), fileRequestString))
+		logger.Log("Error", fmt.Sprintf("%s File request %s error due to parse error", c.RemoteAddr().String(), fileRequestString))
 		return
 	}
 
 	//1 due to get filename
 	fmt.Println(fmt.Sprintf("%s/%s\n", config.Cfg.StoragePath, fileRequestParses[1]))
 	if _, err := os.Stat(fmt.Sprintf("%s/%s", config.Cfg.StoragePath, fileRequestParses[1])); os.IsNotExist(err) {
-		logger.Log("Log", fmt.Sprintf("%s request %s file is not exist", c.RemoteAddr().String(), fileRequestParses[1]))
+		logger.Log("Error", fmt.Sprintf("%s request %s file is not exist", c.RemoteAddr().String(), fileRequestParses[1]))
 		return
 	}
 	logger.Log("Log", fmt.Sprintf("%s request %s file is valid, start send file", c.RemoteAddr().String(), fileRequestParses[1]))
+
+	//Send file
+	fileSender := &SendFile{
+		Filename: fmt.Sprintf("%s/%s", config.Cfg.StoragePath, fileRequestParses[1]),
+		Key:      sessInfo.ClientKey,
+	}
+
+	// TODO: encrypt before send
+	if err := fileSender.Send(c, fileSender); err != nil {
+		logger.Log("Error", fmt.Sprintf("Send file to %s error: %v", c.RemoteAddr().String(), err))
+	}
 
 }

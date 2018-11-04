@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net"
+	"os"
 
 	"github.com/luanngominh/secure-tranfer-file/util"
 )
@@ -13,6 +17,8 @@ func main() {
 	if err != nil {
 		fmt.Println("Dial error")
 	}
+
+	defer conn.Close()
 
 	//Receive pubkey
 	//Protocol use RSA 2048 bits
@@ -43,7 +49,12 @@ func main() {
 		fmt.Println("Receive session key error")
 		panic(err)
 	}
-	session, _ := util.DecryptWithKey(sessBuffer[:n], []byte("meoconxinhxinh"))
+
+	session, err := util.DecryptWithKey(sessBuffer[:n], []byte("meoconxinhxinh"))
+	if err != nil {
+		fmt.Println("Dycrypt data error")
+		panic(err)
+	}
 	fmt.Println(string(session))
 
 	//Send file request
@@ -55,4 +66,22 @@ func main() {
 
 	// Begin receive file
 	fmt.Println("Begin receive file")
+
+	fo, err := os.Create("1.jpg")
+	if err != nil {
+		fmt.Println("Create file error")
+		panic(err)
+	}
+
+	defer fo.Close()
+
+	result, err := ioutil.ReadAll(conn)
+	if err != nil {
+		fmt.Println("Receive file error")
+		panic(err)
+	}
+
+	io.Copy(fo, bytes.NewReader(result))
+
+	fmt.Println("Receive file complete")
 }
