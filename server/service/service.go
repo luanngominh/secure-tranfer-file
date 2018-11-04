@@ -135,8 +135,9 @@ func ConnectionHandle(c net.Conn, logger log.Logger) {
 	}
 
 	//1 due to get filename
-	fmt.Println(fmt.Sprintf("%s/%s\n", config.Cfg.StoragePath, fileRequestParses[1]))
-	if _, err := os.Stat(fmt.Sprintf("%s/%s", config.Cfg.StoragePath, fileRequestParses[1])); os.IsNotExist(err) {
+	// fmt.Println(fmt.Sprintf("%s/%s\n", config.Cfg.StoragePath, fileRequestParses[1]))
+	fullFilePath := fmt.Sprintf("%s/%s", config.Cfg.StoragePath, fileRequestParses[1])
+	if _, err := os.Stat(fullFilePath); os.IsNotExist(err) {
 		logger.Log("Error", fmt.Sprintf("%s request %s file is not exist", c.RemoteAddr().String(), fileRequestParses[1]))
 		return
 	}
@@ -144,7 +145,7 @@ func ConnectionHandle(c net.Conn, logger log.Logger) {
 
 	//Send file
 	fileSender := &SendFile{
-		Filename: fmt.Sprintf("%s/%s", config.Cfg.StoragePath, fileRequestParses[1]),
+		Filename: fullFilePath,
 		Key:      sessInfo.ClientKey,
 	}
 
@@ -152,5 +153,6 @@ func ConnectionHandle(c net.Conn, logger log.Logger) {
 	if err := fileSender.Send(c, fileSender); err != nil {
 		logger.Log("Error", fmt.Sprintf("Send file to %s error: %v", c.RemoteAddr().String(), err))
 	}
+	logger.Log("Success", fmt.Sprintf("Send file to %s success", c.RemoteAddr().String()))
 
 }
