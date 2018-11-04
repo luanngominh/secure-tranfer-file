@@ -30,6 +30,8 @@ func init() {
 		panic(err)
 	}
 	config.Cfg.PublicKey = string(data)
+
+	config.Cfg.StoragePath = os.Getenv("FILE_STORAGE")
 }
 
 func main() {

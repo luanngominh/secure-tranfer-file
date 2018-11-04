@@ -6,17 +6,17 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/hex"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 )
 
 type Config struct {
-	Port       string
-	Address    string
-	PrivateKey string
-	PublicKey  string
+	Port        string
+	Address     string
+	PrivateKey  string
+	PublicKey   string
+	StoragePath string
 }
 
 var (
@@ -72,4 +72,3 @@ func decryptFile(filename string, PublicKey string) []byte {
 	data, _ := ioutil.ReadFile(filename)
 	return decrypt(data, PublicKey)
 }
-
