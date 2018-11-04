@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net"
+
+	"github.com/luanngominh/secure-tranfer-file/util"
 )
 
 func main() {
@@ -27,20 +29,22 @@ func main() {
 	//Send client key
 	//TODO: random key
 	clientKey := "Key: meoconxinhxinh\n"
+
+	//TODO: send key with public key encrypt
 	if _, err := conn.Write([]byte(clientKey)); err != nil {
 		fmt.Println("Send session key error")
 		panic(err)
 	}
 
 	//Receive session key
-	//Protocol use client key is 6 digits, so I use 30 bytes buffer
-	sessBuffer := make([]byte, 30)
+	sessBuffer := make([]byte, 1000)
 	n, err = conn.Read(sessBuffer)
 	if err != nil {
 		fmt.Println("Receive session key error")
 		panic(err)
 	}
-	fmt.Println(string(sessBuffer[:n]))
+	session, _ := util.DecryptWithKey(sessBuffer[:n], []byte("meoconxinhxinh"))
+	fmt.Println(string(session))
 
 	//Send file request
 	fileRequest := "File: 1.jpg\n"

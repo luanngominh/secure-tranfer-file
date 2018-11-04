@@ -49,6 +49,7 @@ func ConnectionHandle(c net.Conn, logger log.Logger) {
 	logger.Log("Log", fmt.Sprintf("Receive client key from %s", c.RemoteAddr().String()))
 
 	// receive client key with 1000 bytes buffer
+	//TODO: Receive with cirpher text, decrypt it
 	clientKey := make([]byte, 1000)
 	n, err := c.Read(clientKey)
 	if err != nil {
@@ -72,13 +73,26 @@ func ConnectionHandle(c net.Conn, logger log.Logger) {
 		logger.Log("KeyInvalid", fmt.Sprintf("%s key invalid is %s", c.RemoteAddr().String(), clientKeyString))
 		return
 	}
+
+	//Get client key from key response
+	keyParser := strings.Split(clientKeyString, " ")
+	if len(keyParser) != 2 {
+		logger.Log("KeyInvalid", fmt.Sprintf("%s key invalid is %s", c.RemoteAddr().String(), clientKeyString))
+		return
+	}
+
 	logger.Log("Key", fmt.Sprintf("%s key is %s", c.RemoteAddr().String(), clientKeyString))
 
 	// store session key to session info
-	sessInfo.ClientKey = clientKeyString
+	sessInfo.ClientKey = keyParser[1]
+	fmt.Println(keyParser[1])
 
+	// TODO: send session key with encrypt with client key
 	// Send session key
-	_, err = writer.WriteString(fmt.Sprintf("Session: %s\n", sessInfo.SessionKey))
+	sessionMessage := fmt.Sprintf("Session: %s\n", sessInfo.SessionKey)
+	sessionMessageCipher, _ := util.EncryptWithKey([]byte(sessionMessage), []byte(sessInfo.ClientKey))
+	fmt.Println(sessionMessageCipher)
+	_, err = writer.Write(sessionMessageCipher)
 	writer.Flush()
 	if err != nil {
 		logger.Log("Error", fmt.Sprintf("Send session key to %s error", c.RemoteAddr().String()))
@@ -96,6 +110,7 @@ func ConnectionHandle(c net.Conn, logger log.Logger) {
 		logger.Log("Key", "Receive file request error")
 		return
 	}
+	// TODO: decrypt filerequest with clientkey
 
 	//n - 1 because remove \n character
 	fileRequestString := string(fileRequest[:n-1])
@@ -128,6 +143,4 @@ func ConnectionHandle(c net.Conn, logger log.Logger) {
 	}
 	logger.Log("Log", fmt.Sprintf("%s request %s file is valid, start send file", c.RemoteAddr().String(), fileRequestParses[1]))
 
-	for {
-	}
 }
