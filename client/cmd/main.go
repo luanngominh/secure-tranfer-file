@@ -75,13 +75,19 @@ func main() {
 
 	defer fo.Close()
 
-	result, err := ioutil.ReadAll(conn)
+	resultWithCirpherData, err := ioutil.ReadAll(conn)
 	if err != nil {
 		fmt.Println("Receive file error")
 		panic(err)
 	}
 
-	io.Copy(fo, bytes.NewReader(result))
+	data, err := util.DecryptWithKey(resultWithCirpherData, []byte("meoconxinhxinh"))
+	if err != nil {
+		fmt.Println("Decrypt key error")
+		panic(err)
+	}
+
+	io.Copy(fo, bytes.NewReader(data))
 
 	fmt.Println("Receive file complete")
 }

@@ -3,6 +3,8 @@ package service
 import (
 	"io/ioutil"
 	"net"
+
+	"github.com/luanngominh/secure-tranfer-file/util"
 )
 
 // FileSender ...
@@ -23,7 +25,9 @@ func (s *SendFile) Send(c net.Conn, fileInfo *SendFile) error {
 		return err
 	}
 
-	_, err = c.Write(fileContent)
+	cipherContent, err := util.EncryptWithKey(fileContent, []byte(fileInfo.Key))
+
+	_, err = c.Write(cipherContent)
 	if err != nil {
 		return err
 	}

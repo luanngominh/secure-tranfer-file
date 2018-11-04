@@ -87,7 +87,6 @@ func ConnectionHandle(c net.Conn, logger log.Logger) {
 	sessInfo.ClientKey = keyParser[1]
 	fmt.Println(keyParser[1])
 
-	// TODO: send session key with encrypt with client key
 	// Send session key
 	sessionMessage := fmt.Sprintf("Session: %s\n", sessInfo.SessionKey)
 	sessionMessageCipher, _ := util.EncryptWithKey([]byte(sessionMessage), []byte(sessInfo.ClientKey))
