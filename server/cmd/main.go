@@ -1,11 +1,15 @@
 package main
 
 import (
+	"crypto/x509"
+	"encoding/base64"
+	"encoding/pem"
 	"fmt"
 	"net"
 	"os"
 
 	"github.com/go-kit/kit/log"
+
 	"github.com/luanngominh/secure-tranfer-file/server/config"
 	"github.com/luanngominh/secure-tranfer-file/server/service"
 )
@@ -17,9 +21,27 @@ var (
 func init() {
 	config.Cfg.Port = os.Getenv("PORT")
 	config.Cfg.Address = os.Getenv("ADDR")
-	config.Cfg.PrivateKey = os.Getenv("PRIVATE")
-	config.Cfg.PublicKey = os.Getenv("PUBLIC")
 
+	data, err := base64.StdEncoding.DecodeString(os.Getenv("PRIVATE"))
+	if err != nil {
+		panic(err)
+	}
+	config.Cfg.PrivateKey = string(data)
+
+	data, err = base64.StdEncoding.DecodeString(os.Getenv("PUBLIC"))
+	if err != nil {
+		panic(err)
+	}
+	config.Cfg.PublicKey = string(data)
+
+	config.Cfg.StoragePath = os.Getenv("FILE_STORAGE")
+
+	// Create rsa.Privatekey
+	block, _ := pem.Decode([]byte(config.Cfg.PrivateKey))
+	config.PrivateKey, err = x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func main() {
@@ -40,6 +62,7 @@ func main() {
 			continue
 		}
 		logger.Log("Log", fmt.Sprintf("%s connected", conn.RemoteAddr().String()))
+
 		// transfer file in secure channel
 		go service.ConnectionHandle(conn, logger)
 	}
