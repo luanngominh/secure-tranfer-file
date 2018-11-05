@@ -7,6 +7,9 @@ all: build-server build-client
 build-server:
 	go build -o bin/server server/cmd/main.go
 
+build-alpine:
+		CGO_ENABLED=0  GOOS=linux GOARCH=amd64 go build -o server server/cmd/main.go
+
 build-client:
 	go build -o bin/client client/cmd/main.go
 
