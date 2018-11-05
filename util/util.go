@@ -14,17 +14,6 @@ import (
 	"strings"
 )
 
-//Decrypt use to decrypt dest with rsa algoithm by private key
-//Private key get from config
-func Decrypt(dst interface{}) (interface{}, error) {
-	return nil, nil
-}
-
-//Encrypt encrypt dst with public key
-// func EncryptWithPublicKey(plainText []byte, publicKey string) ([]byte, error) {
-
-// }
-
 //EncryptWithKey encrypt dst with key
 //Use AES algo or something like that
 func EncryptWithKey(plainText, key []byte) ([]byte, error) {

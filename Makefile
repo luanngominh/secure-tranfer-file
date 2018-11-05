@@ -11,7 +11,7 @@ build-client:
 	go build -o bin/client client/cmd/main.go
 
 up-client: build-client
-	./bin/client
+	./bin/client 1.jpg
 
 up-server: build-server
 	@PORT=${SERVER_PORT} ADDR=${ADDR} PRIVATE=${PRIVATE} PUBLIC=${PUBLIC} FILE_STORAGE=${FILE_STORAGE} ./bin/server
@@ -22,7 +22,3 @@ clean:
 deps:
 	@echo "Install dependenciy packages ..."
 	go get go get github.com/go-kit/kit/log
-
-test:
-	go build -o bin/test main.go
-	@PRIVATE=${PRIVATE} PUBLIC=${PUBLIC} ./bin/test

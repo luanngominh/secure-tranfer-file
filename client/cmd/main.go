@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/md5"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
@@ -19,7 +20,12 @@ import (
 )
 
 func main() {
-	// TODO: client get ip_server:port_server [tên file]
+	if len(os.Args) != 2 {
+		fmt.Println("Pleases, input file name")
+		return
+	}
+	file := os.Args[1]
+
 	conn, err := net.Dial("tcp", "localhost:1212")
 	if err != nil {
 		fmt.Println("Dial error")
@@ -50,8 +56,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	//TODO: random key
-	clientKey := "Key: meoconxinhxinh\n"
+	//Random client key
+	//Random 6 digits, hash it with md5 to make sure that key length 16 bytes
+	num := md5.Sum([]byte(util.GenerateSessionKey()))
+	key := string(num[:])
+	// md5Key := md5.Sum([]byte(num))
+	clientKey := fmt.Sprintf("Key: %s\n", key)
 	cirpher, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, publicKey.(*rsa.PublicKey), []byte(clientKey), []byte(""))
 
 	//Send client key encrypted
@@ -68,7 +78,7 @@ func main() {
 		panic(err)
 	}
 
-	session, err := util.DecryptWithKey(sessBuffer[:n], []byte("meoconxinhxinh"))
+	session, err := util.DecryptWithKey(sessBuffer[:n], []byte(key))
 	if err != nil {
 		fmt.Println("Dycrypt data error")
 		panic(err)
@@ -76,8 +86,8 @@ func main() {
 	fmt.Println(string(session))
 
 	//Send file request
-	fileRequestMess := []byte(fmt.Sprintf("File: 1.jpg\n%s", session))
-	fileRequestCipher, err := util.EncryptWithKey(fileRequestMess, []byte("meoconxinhxinh"))
+	fileRequestMess := []byte(fmt.Sprintf("File: %s\n%s", file, session))
+	fileRequestCipher, err := util.EncryptWithKey(fileRequestMess, []byte(key))
 	if _, err := conn.Write([]byte(fileRequestCipher)); err != nil {
 		fmt.Println("Send file request error")
 		panic(err)
@@ -86,7 +96,7 @@ func main() {
 	// Begin receive file
 	fmt.Println("Begin receive file")
 
-	fo, err := os.Create("1.jpg")
+	fo, err := os.Create(file)
 	if err != nil {
 		fmt.Println("Create file error")
 		panic(err)
@@ -100,7 +110,7 @@ func main() {
 		panic(err)
 	}
 
-	data, err := util.DecryptWithKey(resultWithCirpherData, []byte("meoconxinhxinh"))
+	data, err := util.DecryptWithKey(resultWithCirpherData, []byte(key))
 	if err != nil {
 		fmt.Println("Decrypt key error")
 		panic(err)
