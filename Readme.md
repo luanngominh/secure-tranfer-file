@@ -35,6 +35,12 @@ PUBLIC="blah blah =="
 PRIVATE="blah balh =="
 ```
 
+### Run container 
+* Chúng ta nên apply biến môi trường vào maý trước khi start container cho thuận tiện.
+* `/home/user/files là thư mục chứa file trên máy thật`
+`docker run --name secure-file-stranfer -p 1212:1212 -e SERVER_PORT=${SERVER_PORT} -e ADDR="" \
+-e FILE_STORAGE=/files -e PUBLIC=${PUBLIC} -e PRIVATE=${PRIVATE} -v /home/user/files:/files luanngominh/secure-tranfer-file`
+
 ## Client
 In demo, client will connect to localhost:1212<br>
 ./client <tên file cần nhận>
