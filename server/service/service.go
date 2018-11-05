@@ -52,7 +52,6 @@ func ConnectionHandle(c net.Conn, logger log.Logger) {
 	logger.Log("Log", fmt.Sprintf("Receive client key from %s", c.RemoteAddr().String()))
 
 	// receive client key with 1000 bytes buffer
-	//TODO: Receive with cirpher text, decrypt it
 	clientKeyMess := make([]byte, 1000)
 	n, err := c.Read(clientKeyMess)
 	if err != nil {
@@ -89,10 +88,9 @@ func ConnectionHandle(c net.Conn, logger log.Logger) {
 		return
 	}
 
-	logger.Log("Key", fmt.Sprintf("%s key is %s", c.RemoteAddr().String(), clientKeyString))
-
 	// store session key to session info
 	sessInfo.ClientKey = keyParser[1]
+	logger.Log("Key", fmt.Sprintf("%s key is %s", c.RemoteAddr().String(), sessInfo.ClientKey))
 
 	// Send session key
 	sessionMessage := fmt.Sprintf("Session: %s\n", sessInfo.SessionKey)

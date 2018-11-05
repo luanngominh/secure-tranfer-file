@@ -9,7 +9,7 @@ import (
 
 // FileSender ...
 type FileSender interface {
-	Send(c net.Conn)
+	Send(c net.Conn, fileInfo *SendFile) error
 }
 
 // SendFile storage infomation of file and session
