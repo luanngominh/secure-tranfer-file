@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/x509"
 	"encoding/base64"
+	"encoding/pem"
 	"fmt"
 	"net"
 	"os"
@@ -32,6 +34,13 @@ func init() {
 	config.Cfg.PublicKey = string(data)
 
 	config.Cfg.StoragePath = os.Getenv("FILE_STORAGE")
+
+	// Create rsa.Privatekey
+	block, _ := pem.Decode([]byte(config.Cfg.PrivateKey))
+	config.PrivateKey, err = x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func main() {

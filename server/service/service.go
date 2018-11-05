@@ -2,6 +2,9 @@ package service
 
 import (
 	"bufio"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha256"
 	"fmt"
 	"net"
 	"os"
@@ -50,16 +53,21 @@ func ConnectionHandle(c net.Conn, logger log.Logger) {
 
 	// receive client key with 1000 bytes buffer
 	//TODO: Receive with cirpher text, decrypt it
-	clientKey := make([]byte, 1000)
-	n, err := c.Read(clientKey)
+	clientKeyMess := make([]byte, 1000)
+	n, err := c.Read(clientKeyMess)
 	if err != nil {
 		logger.Log("Error", fmt.Sprintf("Receive client key from %s error", c.RemoteAddr().String()))
 		logger.Log("Error", err)
 		return
 	}
 
-	//n-1 to remove \n character
-	clientKeyString := string(clientKey[:n-1])
+	data, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, config.PrivateKey, clientKeyMess[:n], []byte(""))
+	if err != nil {
+		logger.Log("Error", fmt.Sprintf("Decrypt key from %s error", c.RemoteAddr().String()))
+		return
+	}
+
+	clientKeyString := strings.Replace(string(data), "\n", "", 1)
 
 	//5 to get string "Key: ", so I use "< 6" to except case lester than 6
 	//Case spam case
@@ -96,7 +104,7 @@ func ConnectionHandle(c net.Conn, logger log.Logger) {
 		return
 	}
 
-	// Receive file request
+	//Receive file request
 	//File request same
 	//File: meocon.jpg
 	logger.Log("Log", fmt.Sprintf("Receive file request from %s", c.RemoteAddr().String()))
@@ -107,8 +115,8 @@ func ConnectionHandle(c net.Conn, logger log.Logger) {
 		logger.Log("Error", "Receive file request error")
 		return
 	}
-	//decrypt filerequest with clientkey
 
+	//decrypt filerequest with clientkey
 	fileRequestData, err := util.DecryptWithKey(fileRequestCipher[:n], []byte(sessInfo.ClientKey))
 	if err != nil {
 		logger.Log("Error", "Decrypt file request from %s error", c.RemoteAddr().String())

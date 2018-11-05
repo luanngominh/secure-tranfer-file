@@ -2,11 +2,18 @@ package main
 
 import (
 	"bytes"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha256"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/luanngominh/secure-tranfer-file/util"
 )
@@ -29,15 +36,26 @@ func main() {
 		panic(err)
 	}
 
-	pubKey := string(pubBuffer[:n])
-	fmt.Printf("Pubkey is: \n%s\n", pubKey)
+	pubKeyMess := string(pubBuffer[:n])
+	pubKey := strings.Split(pubKeyMess, ": ")[1]
 
-	//Send client key
+	//create public key encrypt
+	block, _ := pem.Decode([]byte(pubKey))
+	if block == nil || block.Type != "PUBLIC KEY" {
+		log.Fatal("fail to decode PEM block")
+	}
+
+	publicKey, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	//TODO: random key
 	clientKey := "Key: meoconxinhxinh\n"
+	cirpher, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, publicKey.(*rsa.PublicKey), []byte(clientKey), []byte(""))
 
-	//TODO: send key with public key encrypt
-	if _, err := conn.Write([]byte(clientKey)); err != nil {
+	//Send client key encrypted
+	if _, err := conn.Write([]byte(cirpher)); err != nil {
 		fmt.Println("Send session key error")
 		panic(err)
 	}
