@@ -15,5 +15,22 @@ Session: <Session key vừa nhận được>\n
 * Bước 7: Client nhân nội dung file, dùng client key để decrypt
 
 # Usage
+## Server
 Docker version is avaiable at `docker pull luanngominh/secure-tranfer-file`
 ### Env
+SERVER_PORT=<Server run on port>
+ADDR=<Listen on interface>
+FILE_STORAGE=<File folder>
+PUBLIC=<public key with base64 encoding>
+PRIVATE=<private key with base64 encoding>
+
+Example:
+SERVER_PORT="1212"
+ADDR=<"127.0.0.1"
+FILE_STORAGE="${PWD}/files"
+PUBLIC="blah blah =="
+PRIVATE="blah balh =="
+
+## Client
+In demo, client will connect to localhost:1212
+./client <tên file cần nhận>
