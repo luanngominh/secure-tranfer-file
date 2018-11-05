@@ -58,8 +58,9 @@ func main() {
 	fmt.Println(string(session))
 
 	//Send file request
-	fileRequest := "File: 1.jpg\n"
-	if _, err := conn.Write([]byte(fileRequest)); err != nil {
+	fileRequestMess := []byte(fmt.Sprintf("File: 1.jpg\n%s", session))
+	fileRequestCipher, err := util.EncryptWithKey(fileRequestMess, []byte("meoconxinhxinh"))
+	if _, err := conn.Write([]byte(fileRequestCipher)); err != nil {
 		fmt.Println("Send file request error")
 		panic(err)
 	}

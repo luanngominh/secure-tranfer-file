@@ -85,7 +85,6 @@ func ConnectionHandle(c net.Conn, logger log.Logger) {
 
 	// store session key to session info
 	sessInfo.ClientKey = keyParser[1]
-	fmt.Println(keyParser[1])
 
 	// Send session key
 	sessionMessage := fmt.Sprintf("Session: %s\n", sessInfo.SessionKey)
@@ -102,17 +101,33 @@ func ConnectionHandle(c net.Conn, logger log.Logger) {
 	//File: meocon.jpg
 	logger.Log("Log", fmt.Sprintf("Receive file request from %s", c.RemoteAddr().String()))
 	// Use 1000 bytes to store file request
-	fileRequest := make([]byte, 1000)
-	n, err = c.Read(fileRequest)
+	fileRequestCipher := make([]byte, 1000)
+	n, err = c.Read(fileRequestCipher)
 	if err != nil {
 		logger.Log("Error", "Receive file request error")
 		return
 	}
-	// TODO: decrypt filerequest with clientkey
-	// TODO: compare session key
+	//decrypt filerequest with clientkey
 
-	//n - 1 because remove \n character
-	fileRequestString := string(fileRequest[:n-1])
+	fileRequestData, err := util.DecryptWithKey(fileRequestCipher[:n], []byte(sessInfo.ClientKey))
+	if err != nil {
+		logger.Log("Error", "Decrypt file request from %s error", c.RemoteAddr().String())
+	}
+
+	fileRequestDataParser := strings.Split(string(fileRequestData), "Session: ")
+	if len(fileRequestDataParser) != 2 {
+		logger.Log("Error", fmt.Sprintf("%s File request message error", c.RemoteAddr().String()))
+		return
+	}
+
+	// chekc session key is true
+	sessionKey := strings.Replace(fileRequestDataParser[1], "\n", "", 1)
+	if sessionKey != sessInfo.SessionKey {
+		logger.Log("Error", fmt.Sprintf("%s session key invalid", c.RemoteAddr().String()))
+		return
+	}
+
+	fileRequestString := strings.Replace(fileRequestDataParser[0], "\n", "", 1)
 
 	//case filename is spam message
 	if len(fileRequestString) < 7 {
@@ -149,7 +164,7 @@ func ConnectionHandle(c net.Conn, logger log.Logger) {
 		Key:      sessInfo.ClientKey,
 	}
 
-	// TODO: encrypt before send
+	//Send with encrypted data
 	if err := fileSender.Send(c, fileSender); err != nil {
 		logger.Log("Error", fmt.Sprintf("Send file to %s error: %v", c.RemoteAddr().String(), err))
 	}
