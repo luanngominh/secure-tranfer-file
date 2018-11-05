@@ -1,7 +1,49 @@
 # Secure Transfer File - Network Security Project 1
 # Protocol
-* Server gửi dữ liệu tin cậy cho Client và đảm bảo giữ liệu được truyền mà bên thứ ba không thể đọc hoặc chỉnh sửa
-* Server và Client sẽ trao đổi dữ liệu bằng cách trao đổi khóa để Server có thể biết mình đang gửi file cho ai và Client biết được mình đang nhận file từ ai
-'<img src="https://www.ibm.com/support/knowledgecenter/en/SSRMWJ_7.0.1/com.ibm.isim.doc/securing/images/ssloneway_generic.jpg">'
-* Tạo một session key bằng hàm băm để đảm bảo hệ thống không bị tấn công từ bên thứ ba
+Sau khi client và server thực hiện tcp handshark thành công:
+* Bước 1:  Server sẽ gửi public key cho client, message có dạng
+Key: <Public key>\n
+* Bước 2: Client sinh ra client key. Key này được sinh ra bằng cách, client sẽ random một chuổi bất kỳ, sau đó hash bằng MD5, chuổi sau khi hash sẽ là key. Key này sẽ được encrypt bằng public key vừa nhận được từ server ở bước 1, sau đó gửi cho server. Message có dạng
+Key: <Client key>\n
+* Bước 3: Server decrypt client key bằng private key ⇒ lấy được client key. Server sẽ sinh ra session key sau đó encrypt session key bằng client key - encrypt bằng AES - và gửi session key cho client. Messes có dạng
+Session: <session key>\n
+* Bước 4: Client nhận được session key ở dạng cipher text, client dùng client key để giải mã ⇒ nhận được session key. Sau đó client sẽ gửi file request, message này được encrypt bằng AES với key là client key. Message có dạng
+File: <Tên file>\n
+Session: <Session key vừa nhận được>\n
+* Bước 5: Server nhận được file request, giải mã bằng client key nhận được file request. So sánh session key, nếu trùng thì qua bước 6, ngược lại đóng kết nối.
+* Bước 6: Server sẽ kiểm tra file có tồn tại hay không, nếu không có thì đóng kết nối. Nếu có, server sẽ đọc file, sau đó encrypt bằng client key và gửi qua client
+* Bước 7: Client nhân nội dung file, dùng client key để decrypt
+
 # Usage
+## Server
+Docker version is avaiable at `docker pull luanngominh/secure-tranfer-file`
+### Env
+```
+SERVER_PORT=<Server run on port>
+ADDR=<Listen on interface>
+FILE_STORAGE=<File folder>
+PUBLIC=<public key with base64 encoding>
+PRIVATE=<private key with base64 encoding>
+```
+
+Example:
+```
+SERVER_PORT="1212"
+ADDR=<"127.0.0.1"
+FILE_STORAGE="${PWD}/files"
+PUBLIC="blah blah =="
+PRIVATE="blah balh =="
+```
+
+### Run container 
+* Chúng ta nên apply biến môi trường vào maý trước khi start container cho thuận tiện.
+* `/home/user/files là thư mục chứa file trên máy thật`
+```
+docker run --name secure-file-stranfer -p 1212:1212 -e SERVER_PORT=${SERVER_PORT} -e ADDR="" \
+-e FILE_STORAGE=/files -e PUBLIC=${PUBLIC} -e PRIVATE=${PRIVATE} -v /home/user/files:/files \
+luanngominh/secure-tranfer-file
+```
+
+## Client
+In demo, client will connect to localhost:1212<br>
+./client <tên file cần nhận>

@@ -57,7 +57,7 @@ func main() {
 	}
 
 	//Random client key
-	//Random 6 digits, hash it with md5 to make sure that key length 16 bytes
+	//Random 6 digits, hash it with md5 to make sure that key length 32 bytes
 	num := md5.Sum([]byte(util.GenerateSessionKey()))
 	key := string(num[:])
 	// md5Key := md5.Sum([]byte(num))
