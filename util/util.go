@@ -17,7 +17,7 @@ import (
 //EncryptWithKey encrypt dst with key
 //Use AES algo or something like that
 func EncryptWithKey(plainText, key []byte) ([]byte, error) {
-	//Make sure key is 16bytes
+	//Make sure key is 32 bytes
 	md5Key := (md5.Sum(key))
 	block, err := aes.NewCipher(md5Key[:])
 	if err != nil {
@@ -40,7 +40,7 @@ func EncryptWithKey(plainText, key []byte) ([]byte, error) {
 //DecryptWithKey decrypt dst with key
 //Use AES algo or something like that
 func DecryptWithKey(cipherText, key []byte) ([]byte, error) {
-	//Make sure key is 16bytes
+	//Make sure key is 32 bytes
 	md5Key := (md5.Sum(key))
 	block, err := aes.NewCipher(md5Key[:])
 	if err != nil {
