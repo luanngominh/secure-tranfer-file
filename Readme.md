@@ -18,18 +18,22 @@ Session: <Session key vừa nhận được>\n
 ## Server
 Docker version is avaiable at `docker pull luanngominh/secure-tranfer-file`
 ### Env
-SERVER_PORT=<Server run on port><br>
-ADDR=<Listen on interface><br>
-FILE_STORAGE=<File folder><br>
-PUBLIC=<public key with base64 encoding><br>
-PRIVATE=<private key with base64 encoding><br>
+```
+SERVER_PORT=<Server run on port>
+ADDR=<Listen on interface>
+FILE_STORAGE=<File folder>
+PUBLIC=<public key with base64 encoding>
+PRIVATE=<private key with base64 encoding>
+```
 
 Example:
-SERVER_PORT="1212"<br>
-ADDR=<"127.0.0.1"<br>
-FILE_STORAGE="${PWD}/files"<br>
-PUBLIC="blah blah =="<br>
-PRIVATE="blah balh =="<br>
+```
+SERVER_PORT="1212"
+ADDR=<"127.0.0.1"
+FILE_STORAGE="${PWD}/files"
+PUBLIC="blah blah =="
+PRIVATE="blah balh =="
+```
 
 ## Client
 In demo, client will connect to localhost:1212<br>
